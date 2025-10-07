@@ -2,9 +2,14 @@ using System;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.ApplicationModel;
+using GPSdemo3.Configuration; // Added for Permissions
 
 
 namespace GPSdemo3.ViewModels
@@ -83,8 +88,26 @@ namespace GPSdemo3.ViewModels
                 StatusMessage = string.Empty;
                 Address = string.Empty;
 
+                if (!await EnsureLocationPermissionAsync())
+                    return;
+
+               
                 var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
-                var location = await Geolocation.GetLocationAsync(request);
+                Location location = null;
+                try
+                {
+                    location = await Geolocation.GetLocationAsync(request);
+                }
+                catch (FeatureNotEnabledException)
+                {
+                    StatusMessage = "Location services disabled.";
+                }
+
+                // Fallback to last known if active failed
+                if (location == null)
+                {
+                    location = await Geolocation.GetLastKnownLocationAsync();
+                }
 
                 if (location == null)
                 {
@@ -113,6 +136,21 @@ namespace GPSdemo3.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private async Task<bool> EnsureLocationPermissionAsync()
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            }
+            if (status != PermissionStatus.Granted)
+            {
+                StatusMessage = "Location permission denied.";
+                return false;
+            }
+            return true;
         }
 
         private async Task ReverseGeocodeAsync(double lat, double lon)
@@ -151,10 +189,5 @@ namespace GPSdemo3.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    // Add this class to your project, ideally in a separate file, or at the top of LocationViewModel.cs for demonstration.
-    // Replace "YOUR_AZURE_MAPS_SUBSCRIPTION_KEY" with your actual Azure Maps subscription key.
-    public static class AzureMapsConfig
-    {
-        public static string SubscriptionKey { get; } = "YOUR_AZURE_MAPS_SUBSCRIPTION_KEY";
-    }
+    
 }
