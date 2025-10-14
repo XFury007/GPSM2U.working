@@ -40,7 +40,7 @@
 
             <Label FontSize="12"
                    Text="Note: Opens Azure Maps static map (or JSON if adjusted). Replace logic to render inside the app if needed." 
-                   TextColor="#666"/>
+                   TextColor="Beige"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
