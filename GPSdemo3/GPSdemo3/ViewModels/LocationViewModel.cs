@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.ApplicationModel;
 using GPSdemo3.Configuration;
@@ -18,15 +20,47 @@ namespace GPSdemo3.ViewModels
         private double? _longitude;
         private string _address;
         private string _statusMessage;
+        private List<SchoolInfo> _nearestSchools;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ICommand GetLocationCommand { get; }
+        public ICommand FindNearestSchoolsCommand { get; }
 
         // New route commands
         public ICommand RouteToTableMountainCommand { get; }
         public ICommand RouteToVAWaterfrontCommand { get; }
         public ICommand RouteToCapePointCommand { get; }
+        public ICommand RouteToBishopsCommand { get; }
+        public ICommand RouteToRondeboschBoysCommand { get; }
+        public ICommand RouteToRondeboschGirlsCommand { get; }
+        public ICommand RouteToRustenburgGirlsCommand { get; }
+        public ICommand RouteToWesterfordCommand { get; }
+        public ICommand RouteToSACSCommand { get; }
+        public ICommand RouteToWynbergBoysCommand { get; }
+        public ICommand RouteToWynbergGirlsCommand { get; }
+        public ICommand RouteToHerschelGirlsCommand { get; }
+        public ICommand RouteToSeaPointHighCommand { get; }
+        public ICommand RouteToCampsBayHighCommand { get; }
+        public ICommand RouteToPinelandsHighCommand { get; }
+        public ICommand RouteToTableViewHighCommand { get; }
+        public ICommand RouteToMilnertonHighCommand { get; }
+        public ICommand RouteToFairmontCommand { get; }
+        public ICommand RouteToDFMalanCommand { get; }
+        public ICommand RouteToTheSettlersCommand { get; }
+        public ICommand RouteToBellvilleHighCommand { get; }
+        public ICommand RouteToDurbanvilleHighCommand { get; }
+        public ICommand RouteToGoodwoodCommand { get; }
+        public ICommand RouteToBelharCommand { get; }
+        public ICommand RouteToAbbottsCollegeMilnertonCommand { get; }
+        public ICommand RouteToBishopLavisCommand { get; }
+        public ICommand RouteToSaltRiverHighCommand { get; }
+        public ICommand RouteToNoordhoekHighCommand { get; }
+        public ICommand RouteToHoutBayHighCommand { get; }
+        public ICommand RouteToChapmansPeakCommand { get; }
+        public ICommand RouteToMuizenbergHighCommand { get; }
+
+        public ICommand OpenRouteToSchoolCommand { get; }
 
         public bool IsBusy
         {
@@ -38,12 +72,13 @@ namespace GPSdemo3.ViewModels
                 OnPropertyChanged(nameof(IsBusy));
                 OnPropertyChanged(nameof(DisplayLocation));
                 (GetLocationCommand as Command)?.ChangeCanExecute();
+                (FindNearestSchoolsCommand as Command)?.ChangeCanExecute();
                 (RouteToTableMountainCommand as Command)?.ChangeCanExecute();
                 (RouteToVAWaterfrontCommand as Command)?.ChangeCanExecute();
                 (RouteToCapePointCommand as Command)?.ChangeCanExecute();
                 (RouteToTableMountainCommand as Command)?.ChangeCanExecute();
                 (RouteToVAWaterfrontCommand as Command)?.ChangeCanExecute();
-                (RouteToCapePointCommand as Command)?.ChangeCanExecute();
+
             }
         }
 
@@ -70,6 +105,20 @@ namespace GPSdemo3.ViewModels
             get => _statusMessage;
             private set { if (_statusMessage == value) return; _statusMessage = value; OnPropertyChanged(nameof(StatusMessage)); OnPropertyChanged(nameof(DisplayLocation)); }
         }
+
+        public List<SchoolInfo> NearestSchools
+        {
+            get => _nearestSchools;
+            private set
+            {
+                if (_nearestSchools == value) return;
+                _nearestSchools = value;
+                OnPropertyChanged(nameof(NearestSchools));
+                OnPropertyChanged(nameof(HasNearestSchools));
+            }
+        }
+
+        public bool HasNearestSchools => NearestSchools?.Count > 0;
 
         public string DisplayLocation
         {
@@ -98,18 +147,104 @@ namespace GPSdemo3.ViewModels
             }
         }
 
-        public LocationViewModel()
+
+
+
+        private List<SchoolInfo> GetAllSchools()
         {
-            GetLocationCommand = new Command(async () => await GetLocationAsync(), () => !IsBusy);
-            RouteToTableMountainCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Table Mountain Aerial Cableway", -33.9648, 18.4031),
-                () => !IsBusy);
-            RouteToVAWaterfrontCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("V&A Waterfront", -33.9036, 18.4204),
-                () => !IsBusy);
-            RouteToCapePointCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Cape Point", -34.3568, 18.4975),
-                () => !IsBusy);
+            return new List<SchoolInfo>
+            {
+                new SchoolInfo("Bishops Diocesan College", -33.96878, 18.46837),
+                new SchoolInfo("Rondebosch Boys' High School", -33.96806, 18.47639),
+                new SchoolInfo("Rondebosch Girls' High School", -33.96790, 18.47600),
+                new SchoolInfo("Rustenburg Girls' High School", -33.96417, 18.47778),
+                new SchoolInfo("Westerford High School", -33.96365, 18.46895),
+                new SchoolInfo("South African College Schools (SACS) High School", -33.97040, 18.46011),
+                new SchoolInfo("Wynberg Boys' High School", -33.99639, 18.45889),
+                new SchoolInfo("Wynberg Girls' High School", -33.99700, 18.45450),
+                new SchoolInfo("Herschel Girls' School", -33.98090, 18.47020),
+                new SchoolInfo("Sea Point High School", -33.91784, 18.39207),
+                new SchoolInfo("Camps Bay High School", -33.94150, 18.38100),
+                new SchoolInfo("Pinelands High School", -33.95450, 18.49740),
+                new SchoolInfo("Table View High School", -33.83106, 18.49879),
+                new SchoolInfo("Milnerton High School", -33.85320, 18.48820),
+                new SchoolInfo("Fairmont High School", -33.81850, 18.65590),
+                new SchoolInfo("Hoërskool D.F. Malan", -33.88810, 18.63650),
+                new SchoolInfo("The Settlers High School", -33.87300, 18.61500),
+                new SchoolInfo("Bellville High School", -33.88100, 18.63000),
+                new SchoolInfo("Durbanville High School", -33.84860, 18.65720),
+                new SchoolInfo("Goodwood High School", -33.89420, 18.59800),
+                new SchoolInfo("Belhar Secondary School", -33.87260, 18.60210),
+                new SchoolInfo("Abbotts College Milnerton", -33.84260, 18.49090),
+                new SchoolInfo("Bishop Lavis High School", -33.89500, 18.59000),
+                new SchoolInfo("Salt River High School", -33.92900, 18.44400),
+                new SchoolInfo("Noordhoek High School", -34.06800, 18.38600),
+                new SchoolInfo("Hout Bay High School", -34.04100, 18.35600)
+            };
+        }
+
+        private async Task FindNearestSchoolsAsync()
+        {
+            try
+            {
+                IsBusy = true;
+                NearestSchools = null;
+
+                // Ensure we have current location
+                if (Latitude is null || Longitude is null)
+                {
+                    await GetLocationAsync();
+                }
+
+                if (Latitude is null || Longitude is null)
+                {
+                    StatusMessage = "Unable to determine current location.";
+                    return;
+                }
+
+                var schools = GetAllSchools();
+                var currentLat = Latitude.Value;
+                var currentLon = Longitude.Value;
+
+                // Calculate distance to each school and sort
+                foreach (var school in schools)
+                {
+                    school.DistanceKm = CalculateDistance(currentLat, currentLon, school.Latitude, school.Longitude);
+                }
+
+                // Get the 3 nearest schools
+                NearestSchools = schools.OrderBy(s => s.DistanceKm).Take(3).ToList();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = "Error finding nearest schools: " + ex.Message;
+                System.Diagnostics.Debug.WriteLine("FindNearestSchoolsAsync error: " + ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            // Haversine formula to calculate distance between two coordinates
+            const double R = 6371; // Earth's radius in kilometers
+
+            var dLat = ToRadians(lat2 - lat1);
+            var dLon = ToRadians(lon2 - lon1);
+
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            return R * c;
+        }
+
+        private double ToRadians(double degrees)
+        {
+            return degrees * Math.PI / 180;
         }
 
         private async Task GetLocationAsync()
@@ -182,11 +317,16 @@ namespace GPSdemo3.ViewModels
             }
         }
 
+        public async Task OpenRouteToSchoolAsync(SchoolInfo school)
+        {
+            await OpenAzureMapsRouteAsync(school.Name, school.Latitude, school.Longitude);
+        }
+
         private async Task OpenAzureMapsRouteAsync(string destinationName, double destLat, double destLon)
         {
             try
             {
-                        // Ensure we have current location
+                // Ensure we have current location
                 if (Latitude is null || Longitude is null)
                     await GetLocationAsync();
 
@@ -204,7 +344,7 @@ namespace GPSdemo3.ViewModels
                 // Example: "My Location" route, using V&A Waterfront as default destination
                 if (string.IsNullOrWhiteSpace(destinationName))
                 {
-                    destinationName = "V&A Waterfront";
+                    destinationName = "Wynberg High School";
                     destLatStr = "-33.9036";
                     destLonStr = "18.4204";
                 }
@@ -266,5 +406,90 @@ namespace GPSdemo3.ViewModels
 
         private void OnPropertyChanged(string name) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        public LocationViewModel()
+        {
+            GetLocationCommand = new Command(
+                async () => await GetLocationAsync(),
+                () => !IsBusy);
+
+            FindNearestSchoolsCommand = new Command(
+                async () => await FindNearestSchoolsAsync(),
+                () => !IsBusy);
+
+            OpenRouteToSchoolCommand = new Command<SchoolInfo>(
+                async (school) => await OpenRouteToSchoolAsync(school),
+                (school) => !IsBusy && school != null);
+
+            RouteToBishopsCommand = new Command(
+          async () => await OpenAzureMapsRouteAsync("Bishops Diocesan College", -33.96878, 18.46837),
+          () => !IsBusy);
+
+            RouteToRondeboschBoysCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Rondebosch Boys' High School", -33.96806, 18.47639),
+                () => !IsBusy);
+
+            RouteToRondeboschGirlsCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Rondebosch Girls' High School", -33.96790, 18.47600),
+                () => !IsBusy);
+
+            RouteToRustenburgGirlsCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Rustenburg Girls' High School", -33.96417, 18.47778),
+                () => !IsBusy);
+
+            RouteToWesterfordCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Westerford High School", -33.96365, 18.46895),
+                () => !IsBusy);
+
+            RouteToSACSCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("South African College Schools (SACS) High School", -33.97040, 18.46011),
+                () => !IsBusy);
+
+            RouteToWynbergBoysCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Wynberg Boys' High School", -33.99639, 18.45889),
+                () => !IsBusy);
+
+            RouteToWynbergGirlsCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Wynberg Girls' High School", -33.99700, 18.45450),
+                () => !IsBusy);
+
+            RouteToHerschelGirlsCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Herschel Girls' School", -33.98090, 18.47020),
+                () => !IsBusy);
+
+            RouteToSeaPointHighCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Sea Point High School", -33.91784, 18.39207),
+                () => !IsBusy);
+
+            RouteToCampsBayHighCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Camps Bay High School", -33.94150, 18.38100),
+                () => !IsBusy);
+
+            RouteToPinelandsHighCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Pinelands High School", -33.95450, 18.49740),
+                () => !IsBusy);
+
+            RouteToTableViewHighCommand = new Command(
+                async () => await OpenAzureMapsRouteAsync("Table View High School", -33.83106, 18.49879),
+                () => !IsBusy);
+        }
+        
+        public class SchoolInfo
+        {
+            public string Name { get; set; }
+            public double Latitude { get; set; }
+            public double Longitude { get; set; }
+            public double DistanceKm { get; set; }
+
+            public string DisplayText => $"{Name} ({DistanceKm:F2} km)";
+
+            public SchoolInfo(string name, double latitude, double longitude)
+            {
+                Name = name;
+                Latitude = latitude;
+                Longitude = longitude;
+            }
+        }
     }
+
 }

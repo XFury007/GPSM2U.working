@@ -25,22 +25,52 @@
 
             <BoxView HeightRequest="1" Color="#ccc" Margin="0,20,0,10"/>
 
-            <Label Text="Routes (Azure Maps)"
+            <Label Text="Find Nearest Schools"
                    FontSize="18"
                    FontAttributes="Bold" />
 
-            <Button Text="Route to Table Mountain"
-                    Command="{Binding RouteToTableMountainCommand}" />
+            <Button Text="Find 3 Nearest Schools"
+                    Command="{Binding FindNearestSchoolsCommand}"
+                    BackgroundColor="#2196F3"
+                    TextColor="White" />
 
-            <Button Text="Route to V/A Waterfront"
-                    Command="{Binding RouteToVAWaterfrontCommand}" />
+            <CollectionView ItemsSource="{Binding NearestSchools}"
+                           IsVisible="{Binding HasNearestSchools}"
+                           Margin="0,10,0,0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10" Margin="0,5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-            <Button Text="Route to Cape Point"
-                    Command="{Binding RouteToCapePointCommand}" />
+                            <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                <Label Text="{Binding Name}"
+                                       FontSize="16"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding DistanceKm, StringFormat='Distance: {0:F2} km'}"
+                                       FontSize="14"
+                                       TextColor="Gray" />
+                            </VerticalStackLayout>
 
-            <Label FontSize="12"
-                   Text="Note: Opens Azure Maps static map (or JSON if adjusted). Replace logic to render inside the app if needed." 
-                   TextColor="Beige"/>
+                            <Button Grid.Column="1"
+                                    Text="Navigate"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:LocationViewModel}}, Path=OpenRouteToSchoolCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#4CAF50"
+                                    TextColor="White"
+                                    VerticalOptions="Center"
+                                    Padding="15,5"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
