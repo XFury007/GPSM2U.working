@@ -3,7 +3,7 @@ using Android.Runtime;
 
 namespace GPSdemo3
 {
-    [Application]
+    [Application(Theme = "@style/MainTheme")]
     public class MainApplication : MauiApplication
     {
         public MainApplication(IntPtr handle, JniHandleOwnership ownership)

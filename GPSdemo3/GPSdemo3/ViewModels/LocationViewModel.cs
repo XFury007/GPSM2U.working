@@ -1,15 +1,15 @@
+using GPSdemo3.Configuration;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices.Sensors;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
-using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.ApplicationModel;
-using GPSdemo3.Configuration;
 
 namespace GPSdemo3.ViewModels
 {
@@ -21,11 +21,13 @@ namespace GPSdemo3.ViewModels
         private string _address;
         private string _statusMessage;
         private List<SchoolInfo> _nearestSchools;
+        private List<DistrictOfficeInfo> _nearestDistrictOffices;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ICommand GetLocationCommand { get; }
         public ICommand FindNearestSchoolsCommand { get; }
+        public ICommand FindNearestDistrictOfficesCommand { get; }
 
         // New route commands
         public ICommand RouteToTableMountainCommand { get; }
@@ -59,8 +61,20 @@ namespace GPSdemo3.ViewModels
         public ICommand RouteToHoutBayHighCommand { get; }
         public ICommand RouteToChapmansPeakCommand { get; }
         public ICommand RouteToMuizenbergHighCommand { get; }
+      
+        
+        // Educational District Offices
+        public ICommand RouteToMetroSouthEducationDistrictCommand { get; }
+        public ICommand RouteToMetroCentralEducationDistrictCommand { get; }
 
+        public ICommand RouteToMetroEastEducationDistrictCommand { get; }
+
+        public ICommand RouteToCapeWinelandsEducationDistrictCommand { get; }
+        public ICommand RouteToEdenCentralKarooEducationDistrictCommand { get; }
+        public ICommand RouteToWestCoastEducationDistrictCommand { get; }
+        public ICommand RouteToOverbergEducationDistrictCommand { get; }
         public ICommand OpenRouteToSchoolCommand { get; }
+        public ICommand OpenRouteToDistrictOfficeCommand { get; }
 
         public bool IsBusy
         {
@@ -118,7 +132,20 @@ namespace GPSdemo3.ViewModels
             }
         }
 
+        public List<DistrictOfficeInfo> NearestDistrictOffices
+        {
+            get => _nearestDistrictOffices;
+            private set
+            {
+                if (_nearestDistrictOffices == value) return;
+                _nearestDistrictOffices = value;
+                OnPropertyChanged(nameof(NearestDistrictOffices));
+                OnPropertyChanged(nameof(HasNearestDistrictOffices));
+            }
+        }
+
         public bool HasNearestSchools => NearestSchools?.Count > 0;
+        public bool HasNearestDistrictOffices => NearestDistrictOffices?.Count > 0;
 
         public string DisplayLocation
         {
@@ -183,6 +210,20 @@ namespace GPSdemo3.ViewModels
             };
         }
 
+        private List<DistrictOfficeInfo> GetAllDistrictOffices()
+        {
+            return new List<DistrictOfficeInfo>
+            {
+                new DistrictOfficeInfo("Metro South Education District", -34.0522, 18.4197),
+                new DistrictOfficeInfo("Metro Central Education District", -33.9249, 18.4241),
+                new DistrictOfficeInfo("Metro East Education District", -33.9608, 18.6094),
+                new DistrictOfficeInfo("Cape Winelands Education District", -33.9153, 18.8599),
+                new DistrictOfficeInfo("Eden and Central Karoo Education District", -33.9615, 22.4566),
+                new DistrictOfficeInfo("West Coast Education District", -32.7922, 18.0164),
+                new DistrictOfficeInfo("Overberg Education District", -34.4197, 19.2401)
+            };
+        }
+
         private async Task FindNearestSchoolsAsync()
         {
             try
@@ -219,6 +260,49 @@ namespace GPSdemo3.ViewModels
             {
                 StatusMessage = "Error finding nearest schools: " + ex.Message;
                 System.Diagnostics.Debug.WriteLine("FindNearestSchoolsAsync error: " + ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private async Task FindNearestDistrictOfficesAsync()
+        {
+            try
+            {
+                IsBusy = true;
+                NearestDistrictOffices = null;
+
+                // Ensure we have current location
+                if (Latitude is null || Longitude is null)
+                {
+                    await GetLocationAsync();
+                }
+
+                if (Latitude is null || Longitude is null)
+                {
+                    StatusMessage = "Unable to determine current location.";
+                    return;
+                }
+
+                var districtOffices = GetAllDistrictOffices();
+                var currentLat = Latitude.Value;
+                var currentLon = Longitude.Value;
+
+                // Calculate distance to each district office and sort
+                foreach (var office in districtOffices)
+                {
+                    office.DistanceKm = CalculateDistance(currentLat, currentLon, office.Latitude, office.Longitude);
+                }
+
+                // Get the nearest district office
+                NearestDistrictOffices = districtOffices.OrderBy(d => d.DistanceKm).Take(1).ToList();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = "Error finding nearest district office: " + ex.Message;
+                System.Diagnostics.Debug.WriteLine("FindNearestDistrictOfficesAsync error: " + ex);
             }
             finally
             {
@@ -322,6 +406,11 @@ namespace GPSdemo3.ViewModels
             await OpenAzureMapsRouteAsync(school.Name, school.Latitude, school.Longitude);
         }
 
+        public async Task OpenRouteToDistrictOfficeAsync(DistrictOfficeInfo office)
+        {
+            await OpenAzureMapsRouteAsync(office.Name, office.Latitude, office.Longitude);
+        }
+
         private async Task OpenAzureMapsRouteAsync(string destinationName, double destLat, double destLon)
         {
             try
@@ -417,9 +506,17 @@ namespace GPSdemo3.ViewModels
                 async () => await FindNearestSchoolsAsync(),
                 () => !IsBusy);
 
+            FindNearestDistrictOfficesCommand = new Command(
+                async () => await FindNearestDistrictOfficesAsync(),
+                () => !IsBusy);
+
             OpenRouteToSchoolCommand = new Command<SchoolInfo>(
                 async (school) => await OpenRouteToSchoolAsync(school),
                 (school) => !IsBusy && school != null);
+
+            OpenRouteToDistrictOfficeCommand = new Command<DistrictOfficeInfo>(
+                async (office) => await OpenRouteToDistrictOfficeAsync(office),
+                (office) => !IsBusy && office != null);
 
             RouteToBishopsCommand = new Command(
           async () => await OpenAzureMapsRouteAsync("Bishops Diocesan College", -33.96878, 18.46837),
@@ -484,6 +581,23 @@ namespace GPSdemo3.ViewModels
             public string DisplayText => $"{Name} ({DistanceKm:F2} km)";
 
             public SchoolInfo(string name, double latitude, double longitude)
+            {
+                Name = name;
+                Latitude = latitude;
+                Longitude = longitude;
+            }
+        }
+
+        public class DistrictOfficeInfo
+        {
+            public string Name { get; set; }
+            public double Latitude { get; set; }
+            public double Longitude { get; set; }
+            public double DistanceKm { get; set; }
+
+            public string DisplayText => $"{Name} ({DistanceKm:F2} km)";
+
+            public DistrictOfficeInfo(string name, double latitude, double longitude)
             {
                 Name = name;
                 Latitude = latitude;
