@@ -28,51 +28,6 @@ namespace GPSdemo3.ViewModels
         public ICommand GetLocationCommand { get; }
         public ICommand FindNearestSchoolsCommand { get; }
         public ICommand FindNearestDistrictOfficesCommand { get; }
-
-        // New route commands
-        public ICommand RouteToTableMountainCommand { get; }
-        public ICommand RouteToVAWaterfrontCommand { get; }
-        public ICommand RouteToCapePointCommand { get; }
-        public ICommand RouteToBishopsCommand { get; }
-        public ICommand RouteToRondeboschBoysCommand { get; }
-        public ICommand RouteToRondeboschGirlsCommand { get; }
-        public ICommand RouteToRustenburgGirlsCommand { get; }
-        public ICommand RouteToWesterfordCommand { get; }
-        public ICommand RouteToSACSCommand { get; }
-        public ICommand RouteToWynbergBoysCommand { get; }
-        public ICommand RouteToWynbergGirlsCommand { get; }
-        public ICommand RouteToHerschelGirlsCommand { get; }
-        public ICommand RouteToSeaPointHighCommand { get; }
-        public ICommand RouteToCampsBayHighCommand { get; }
-        public ICommand RouteToPinelandsHighCommand { get; }
-        public ICommand RouteToTableViewHighCommand { get; }
-        public ICommand RouteToMilnertonHighCommand { get; }
-        public ICommand RouteToFairmontCommand { get; }
-        public ICommand RouteToDFMalanCommand { get; }
-        public ICommand RouteToTheSettlersCommand { get; }
-        public ICommand RouteToBellvilleHighCommand { get; }
-        public ICommand RouteToDurbanvilleHighCommand { get; }
-        public ICommand RouteToGoodwoodCommand { get; }
-        public ICommand RouteToBelharCommand { get; }
-        public ICommand RouteToAbbottsCollegeMilnertonCommand { get; }
-        public ICommand RouteToBishopLavisCommand { get; }
-        public ICommand RouteToSaltRiverHighCommand { get; }
-        public ICommand RouteToNoordhoekHighCommand { get; }
-        public ICommand RouteToHoutBayHighCommand { get; }
-        public ICommand RouteToChapmansPeakCommand { get; }
-        public ICommand RouteToMuizenbergHighCommand { get; }
-      
-        
-        // Educational District Offices
-        public ICommand RouteToMetroSouthEducationDistrictCommand { get; }
-        public ICommand RouteToMetroCentralEducationDistrictCommand { get; }
-
-        public ICommand RouteToMetroEastEducationDistrictCommand { get; }
-
-        public ICommand RouteToCapeWinelandsEducationDistrictCommand { get; }
-        public ICommand RouteToEdenCentralKarooEducationDistrictCommand { get; }
-        public ICommand RouteToWestCoastEducationDistrictCommand { get; }
-        public ICommand RouteToOverbergEducationDistrictCommand { get; }
         public ICommand OpenRouteToSchoolCommand { get; }
         public ICommand OpenRouteToDistrictOfficeCommand { get; }
 
@@ -87,37 +42,55 @@ namespace GPSdemo3.ViewModels
                 OnPropertyChanged(nameof(DisplayLocation));
                 (GetLocationCommand as Command)?.ChangeCanExecute();
                 (FindNearestSchoolsCommand as Command)?.ChangeCanExecute();
-                (RouteToTableMountainCommand as Command)?.ChangeCanExecute();
-                (RouteToVAWaterfrontCommand as Command)?.ChangeCanExecute();
-                (RouteToCapePointCommand as Command)?.ChangeCanExecute();
-                (RouteToTableMountainCommand as Command)?.ChangeCanExecute();
-                (RouteToVAWaterfrontCommand as Command)?.ChangeCanExecute();
-
             }
         }
 
         public double? Latitude
         {
             get => _latitude;
-            private set { if (_latitude == value) return; _latitude = value; OnPropertyChanged(nameof(Latitude)); OnPropertyChanged(nameof(DisplayLocation)); }
+            private set
+            {
+                if (_latitude == value) return;
+                _latitude = value;
+                OnPropertyChanged(nameof(Latitude));
+                OnPropertyChanged(nameof(DisplayLocation));
+            }
         }
 
         public double? Longitude
         {
             get => _longitude;
-            private set { if (_longitude == value) return; _longitude = value; OnPropertyChanged(nameof(Longitude)); OnPropertyChanged(nameof(DisplayLocation)); }
+            private set
+            {
+                if (_longitude == value) return;
+                _longitude = value;
+                OnPropertyChanged(nameof(Longitude));
+                OnPropertyChanged(nameof(DisplayLocation));
+            }
         }
 
         public string Address
         {
             get => _address;
-            private set { if (_address == value) return; _address = value; OnPropertyChanged(nameof(Address)); OnPropertyChanged(nameof(DisplayLocation)); }
+            private set
+            {
+                if (_address == value) return;
+                _address = value;
+                OnPropertyChanged(nameof(Address));
+                OnPropertyChanged(nameof(DisplayLocation));
+            }
         }
 
         public string StatusMessage
         {
             get => _statusMessage;
-            private set { if (_statusMessage == value) return; _statusMessage = value; OnPropertyChanged(nameof(StatusMessage)); OnPropertyChanged(nameof(DisplayLocation)); }
+            private set
+            {
+                if (_statusMessage == value) return;
+                _statusMessage = value;
+                OnPropertyChanged(nameof(StatusMessage));
+                OnPropertyChanged(nameof(DisplayLocation));
+            }
         }
 
         public List<SchoolInfo> NearestSchools
@@ -156,8 +129,6 @@ namespace GPSdemo3.ViewModels
                 if (Latitude is null || Longitude is null) return "Tap 'My Location' to fetch.";
                 if (!string.IsNullOrWhiteSpace(Address))
                     return $"{Address}\n({Latitude:0.0000}, {Longitude:0.0000})";
-                if (!string.IsNullOrWhiteSpace(Address))
-                    return $"{Address}\n({Latitude:0.0000}, {Longitude:0.0000})";
 
                 // Cape Town proximity hint
                 if (Latitude is double lat && Longitude is double lon &&
@@ -167,15 +138,9 @@ namespace GPSdemo3.ViewModels
                     return $"Cape Town, South Africa\n({lat:0.0000}, {lon:0.0000})";
                 }
 
-                if (!string.IsNullOrWhiteSpace(Address))
-                    return $"{Address}\n({Latitude:0.0000}, {Longitude:0.0000})";
-
                 return $"({Latitude:0.0000}, {Longitude:0.0000})";
             }
         }
-
-
-
 
         private List<SchoolInfo> GetAllSchools()
         {
@@ -430,14 +395,6 @@ namespace GPSdemo3.ViewModels
                 var destLatStr = destLat.ToString(CultureInfo.InvariantCulture);
                 var destLonStr = destLon.ToString(CultureInfo.InvariantCulture);
 
-                // Example: "My Location" route, using V&A Waterfront as default destination
-                if (string.IsNullOrWhiteSpace(destinationName))
-                {
-                    destinationName = "Wynberg High School";
-                    destLatStr = "-33.9036";
-                    destLonStr = "18.4204";
-                }
-
                 var uri = $"https://www.google.com/maps/dir/?api=1&origin={originLat},{originLon}&destination={destLatStr},{destLonStr}&travelmode=driving";
                 await Launcher.OpenAsync(uri);
             }
@@ -447,7 +404,6 @@ namespace GPSdemo3.ViewModels
             }
         }
 
-        // Add this method to the LocationViewModel class to fix CS0103
         private async Task<bool> EnsureLocationPermissionAsync()
         {
             var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
@@ -458,7 +414,6 @@ namespace GPSdemo3.ViewModels
             return status == PermissionStatus.Granted;
         }
 
-        // Add this method to fix CS0103: The name 'ReverseGeocodeAsync' does not exist in the current context
         private async Task ReverseGeocodeAsync(double lat, double lon)
         {
             try
@@ -517,60 +472,8 @@ namespace GPSdemo3.ViewModels
             OpenRouteToDistrictOfficeCommand = new Command<DistrictOfficeInfo>(
                 async (office) => await OpenRouteToDistrictOfficeAsync(office),
                 (office) => !IsBusy && office != null);
-
-            RouteToBishopsCommand = new Command(
-          async () => await OpenAzureMapsRouteAsync("Bishops Diocesan College", -33.96878, 18.46837),
-          () => !IsBusy);
-
-            RouteToRondeboschBoysCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Rondebosch Boys' High School", -33.96806, 18.47639),
-                () => !IsBusy);
-
-            RouteToRondeboschGirlsCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Rondebosch Girls' High School", -33.96790, 18.47600),
-                () => !IsBusy);
-
-            RouteToRustenburgGirlsCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Rustenburg Girls' High School", -33.96417, 18.47778),
-                () => !IsBusy);
-
-            RouteToWesterfordCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Westerford High School", -33.96365, 18.46895),
-                () => !IsBusy);
-
-            RouteToSACSCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("South African College Schools (SACS) High School", -33.97040, 18.46011),
-                () => !IsBusy);
-
-            RouteToWynbergBoysCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Wynberg Boys' High School", -33.99639, 18.45889),
-                () => !IsBusy);
-
-            RouteToWynbergGirlsCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Wynberg Girls' High School", -33.99700, 18.45450),
-                () => !IsBusy);
-
-            RouteToHerschelGirlsCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Herschel Girls' School", -33.98090, 18.47020),
-                () => !IsBusy);
-
-            RouteToSeaPointHighCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Sea Point High School", -33.91784, 18.39207),
-                () => !IsBusy);
-
-            RouteToCampsBayHighCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Camps Bay High School", -33.94150, 18.38100),
-                () => !IsBusy);
-
-            RouteToPinelandsHighCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Pinelands High School", -33.95450, 18.49740),
-                () => !IsBusy);
-
-            RouteToTableViewHighCommand = new Command(
-                async () => await OpenAzureMapsRouteAsync("Table View High School", -33.83106, 18.49879),
-                () => !IsBusy);
         }
-        
+
         public class SchoolInfo
         {
             public string Name { get; set; }
@@ -605,5 +508,4 @@ namespace GPSdemo3.ViewModels
             }
         }
     }
-
 }
